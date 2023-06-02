@@ -1,3 +1,4 @@
+using Common.DTOs.TeamDto;
 using Common.Interfaces;
 using Common.Model;
 using Functional.Mapper;
@@ -8,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddDbContext<AppDbContext>(e => e.UseSqlServer("server = DESKTOP-DAJFN0S; database = EmployeesDB; Integrated Security = true; TrustServerCertificate = true"));
+builder.Services.AddDbContext<AppDbContext>(e => e.UseSqlServer("server = DESKTOP-DAJFN0S; database = dddDb; Integrated Security = true; TrustServerCertificate = true"));
 
 //Generic repositories injectino
 
@@ -18,6 +19,7 @@ builder.Services.AddScoped<IGenericRepository<Employee>,GenericRepository<Employ
 builder.Services.AddScoped<IGenericRepository<Job>, GenericRepository<Job>>();
 builder.Services.AddScoped<IGenericRepository<Address>, GenericRepository<Address>>();
 builder.Services.AddScoped<IGenericRepository<Team>, GenericRepository<Team>>();
+
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -33,7 +35,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseHttpsRedirection();
 

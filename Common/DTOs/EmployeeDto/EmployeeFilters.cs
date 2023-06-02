@@ -1,11 +1,9 @@
-﻿using Common.DTOs.AddressDto;
-using Common.DTOs.JobDto;
+﻿using Common.Model;
 
 namespace Common.DTOs.EmployeeDto;
 
-public class EmployeeFiltered
+public class EmployeeFilters
 {
-
 
     public string? FirstName { get; set; }
 
@@ -15,8 +13,6 @@ public class EmployeeFiltered
 
     public string? Job { get; set; }
 
-    public int? skip { get; set; }
-
-    public int? take { get; set; }
+    public List<int>? Teams { get; set; }
 
 }

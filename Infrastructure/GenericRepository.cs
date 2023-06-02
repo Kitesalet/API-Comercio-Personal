@@ -12,26 +12,28 @@ namespace Infrastructure;
 
 public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
 {
+
     private readonly AppDbContext _context;
     private readonly DbSet<T> _dbSet;
 
     public GenericRepository(AppDbContext context)
     {
-
         _context = context;
 
-        _dbSet = context.Set<T>();  
-
+        _dbSet = _context.Set<T>();
+        
     }
 
 
     public async Task<int> AddAsync(T entity)
     {
-       
+        
+
         await _dbSet.AddAsync(entity);
 
         return entity.Id;
 
+       
 
     }
 
@@ -40,12 +42,11 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
         
         if(_dbSet.Attach(entity).State == EntityState.Detached)
         {
-            _context.Set<T>().Attach(entity);
+            _dbSet.Attach(entity);
         }
 
-          _dbSet.Remove(entity);
+        _dbSet.Remove(entity);
 
-      
 
     }
 
@@ -61,7 +62,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
 
         if(take != null)
         {
-            query = query.Take(take.Value); 
+            query = query.Take(take.Value);
         }
 
         foreach(var include in includes)
@@ -71,37 +72,38 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
 
         }
 
+
         return await query.ToListAsync();
 
-    
+
     }
 
     public async Task<T> GetByIdAsync(int id, params Expression<Func<T, object>>[] includes)
     {
-
-        IQueryable<T> query = _dbSet;
+        
+        IQueryable<T> query = _context.Set<T>();
 
         query = query.Where(x => x.Id == id);
 
         foreach(var include in includes)
         {
-
             query = query.Include(include);
         }
 
         return await query.SingleOrDefaultAsync();
-        
+
 
 
     }
 
-    public async Task<List<T>> GetFilteredAsync(Expression<Func<T, bool>>[] filters, int? skip, int? take, params Expression<Func<T, object>>[] includes)
+    public async Task<List<T>> GetFilteredAsync(Expression<Func<T, bool>>[] filter, int? skip, int? take, params Expression<Func<T, object>>[] includes)
     {
+
         IQueryable<T> query = _dbSet;
 
-        foreach(var x in filters)
+        foreach(var filte in filter)
         {
-            query = query.Where(x);
+            query = query.Where(filte);
         }
 
         if (skip != null)
@@ -121,18 +123,25 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
 
         }
 
+
         return await query.ToListAsync();
+
     }
 
     public async Task SaveChangesAsync()
     {
+
         await _context.SaveChangesAsync();
+
+
     }
 
     public void UpdateAsync(T entity)
     {
-
-        _dbSet.Attach(entity);
+        if (_dbSet.Attach(entity).State == EntityState.Detached)
+        {
+            _dbSet.Attach(entity);
+        }
 
         _context.Entry(entity).State = EntityState.Modified;
 

@@ -1,4 +1,6 @@
-﻿namespace Common.DTOs.TeamDto;
+﻿using Common.Model;
+
+namespace Common.DTOs.TeamDto;
 
 public class TeamDelete
 {

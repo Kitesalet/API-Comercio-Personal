@@ -1,13 +1,14 @@
-﻿namespace Common.DTOs.EmployeeDto
-{
-    public class EmployeeList
-    {
+﻿using Common.Model;
 
-        public int Id { get; set; }
+namespace Common.DTOs.EmployeeDto
+{
+    public class EmployeeGetSimple
+    {
 
         public string FirstName { get; set; }
 
         public string LastName { get; set; }
+    
 
     }
 }

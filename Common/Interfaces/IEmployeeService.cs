@@ -12,13 +12,13 @@ public interface IEmployeeService
 
     public Task<int> CreateEmployeeAsync(EmployeeCreate employeeCreate);
 
-    public Task<EmployeeGet> GetEmployeeByIdAsync(int id);
-
-    public Task<List<EmployeeList>> GetEmployeesFiltered(EmployeeFiltered employeeFiltered);
-
-    public Task UpdateEmployee(EmployeeUpdate employeeUpdate);
-
+    public Task UpdateEmployeeAsync(EmployeeUpdate employeeUpdate);
 
     public Task DeleteEmployee(EmployeeDelete employeeDelete);
+
+    public Task<EmployeeGet> GetEmployeeByIdAsync(int employeeId);
+
+    public Task<List<EmployeeGetSimple>> GetEmployeeFiltered(EmployeeFilters employeeFIlters);
+
 
 }

@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Common.DTOs;
 using Common.DTOs.TeamDto;
 using Common.Interfaces;
 using Common.Model;
@@ -12,100 +11,86 @@ using System.Threading.Tasks;
 
 namespace Functional.Services;
 
-public class TeamService : ITeamService
+internal class TeamService : ITeamService
 {
-    private IMapper _mapper;
-    private IGenericRepository<Team> _teamRepo;
-    private IGenericRepository<Employee> _employeeRepo;
+    private readonly IMapper _mapper;
+    private readonly IGenericRepository<Team> _teamRepo;
+    private readonly IGenericRepository<Employee> _employeeRepo;
 
-    public TeamService(IMapper mapper, IGenericRepository<Team> teamRepo, IGenericRepository<Employee> employeeRepo)
+    public TeamService(IMapper mapper, IGenericRepository<Team> teamRepo, IGenericRepository<Employee> employeesRepo)
     {
 
         _mapper = mapper;
         _teamRepo = teamRepo;
-        _employeeRepo = employeeRepo;
-
+        _employeeRepo = employeesRepo;
 
     }
 
-
-    public async Task<int> AddTeamAsync(TeamCreate teamAdd)
+    public async Task<int> CreateTeamAsync(TeamCreate teamCreate)
     {
+
+        var employees = await _employeeRepo.GetFilteredAsync(new Expression<Func<Employee, bool>>[] { e => teamCreate.Employees.Contains(e.Id) }, null, null);
+
+        var mapped = _mapper.Map<Team>(teamCreate);
+
+       mapped.Employees = employees;
+
        
-        var entity = _mapper.Map<Team>(teamAdd);
 
-        Expression<Func<Employee, bool>>[] employeeFilter = new Expression<Func<Employee, bool>>[] {e => teamAdd.Employees.Contains(e.Id)};
+       await _teamRepo.AddAsync(mapped);
 
-        var listEmployee = await _employeeRepo.GetFilteredAsync(employeeFilter, null, null);
+       await _teamRepo.SaveChangesAsync();
 
-        entity.Employees = listEmployee;
-
-        await _teamRepo.AddAsync(entity);
-
-        await _teamRepo.SaveChangesAsync();
-
-        return entity.Id;
-
+       return mapped.Id;
 
     }
 
     public async Task DeleteTeam(TeamDelete teamDelete)
     {
+        
+        var team = await _teamRepo.GetByIdAsync(teamDelete.Id, e => e.Employees);
 
-        var entity = await _teamRepo.GetByIdAsync(teamDelete.Id);
-
-        _teamRepo.DeleteAsync(entity);
+        _teamRepo.DeleteAsync(team);
 
         await _teamRepo.SaveChangesAsync();
 
-
-
     }
 
-    public async Task<TeamGet> GetTeamByIdAsync(int id)
+    public async Task<TeamGet> GetTeamIdAsync(int id)
     {
         
-        var entity = await _teamRepo.GetByIdAsync(id, e => e.Employees);
+        var x = await _teamRepo.GetByIdAsync(id, e => e.Employees);
 
-        var teamMapped = _mapper.Map<TeamGet>(entity);
-
-        return teamMapped;
+        return _mapper.Map<TeamGet>(x);
 
     }
 
-    public async Task<List<TeamGet>> GetTeamListAsync(TeamFiltered filter)
+    public async Task<List<TeamGet>> GetTeamsAsync()
     {
 
-        Expression<Func<Team, bool>>[] filtros = new Expression<Func<Team, bool>>[]
-        {
-           team => filter.Name == null ? true : team.Name.StartsWith(filter.Name)
-        };
+        var x = await _teamRepo.GetAsync(null,null, e => e.Employees);
 
-        var entity = await _teamRepo.GetFilteredAsync(filtros, null, null, e => e.Employees);
+        return _mapper.Map<List<TeamGet>>(x);
 
-        return _mapper.Map<List<TeamGet>>(entity);  
 
     }
 
     public async Task UpdateTeam(TeamUpdate teamUpdate)
     {
-        
-        var entity = await _teamRepo.GetByIdAsync(teamUpdate.Id, e => e.Employees);
 
-        Expression<Func<Employee, bool>>[] filter = new Expression<Func<Employee, bool>>[]
-        { 
-            emp => teamUpdate.Employees.Contains(emp.Id)
-        };
+        var x = await _teamRepo.GetByIdAsync(teamUpdate.Id, e => e.Employees);
 
-        entity.Employees = await _employeeRepo.GetFilteredAsync(filter, null, null);
+        var employees = await _employeeRepo.GetFilteredAsync(new Expression<Func<Employee, bool>>[] {}, null, null);
 
-        //Esta es una forma para tambien mapear
+        _mapper.Map(teamUpdate, x);
 
-        _mapper.Map(teamUpdate, entity);
+        x.Employees = employees;
 
-        _teamRepo.UpdateAsync(entity);
+        _teamRepo.UpdateAsync(x);
 
         await _teamRepo.SaveChangesAsync();
+
+
 
     }
 }

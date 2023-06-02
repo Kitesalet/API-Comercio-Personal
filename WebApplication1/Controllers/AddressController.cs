@@ -39,9 +39,9 @@ namespace WebApplication1.Controllers
         [Route("GetId/{id}")]
         public async Task<IActionResult> GetAddressId(int id)
         {
-            await _addressService.GetAddressId(id);
+            var x = await _addressService.GetAddressId(id);
 
-            return null;
+            return Ok(x);
         }
 
         //GetAll

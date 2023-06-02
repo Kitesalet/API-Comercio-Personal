@@ -24,10 +24,6 @@ namespace Functional.Services
 
         }
 
-        public Task CreateJob(AddressCreate entity)
-        {
-            throw new NotImplementedException();
-        }
 
         public async Task<int> JobCreateAsync(JobCreate jobCreate)
         {

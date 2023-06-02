@@ -20,5 +20,5 @@ public interface IJobService
     public Task JobUpdate(JobUpdate jobUpdate);
 
     public Task JobDelete(JobDelete jobDelete);
-    Task CreateJob(AddressCreate entity);
+
 }

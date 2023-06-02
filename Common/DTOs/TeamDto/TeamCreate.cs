@@ -1,12 +1,13 @@
 ﻿using Common.Model;
 
-namespace Common.DTOs.TeamDto
+namespace Common.DTOs.TeamDto;
+
+public class TeamCreate
 {
-    public class TeamCreate
-    {
 
-        public int Name { get; set; }
-        public List<int> Employees { get; set; }
 
-    }
+    public string Name { get; set; }
+
+    public List<int> Employees { get; set; }
+
 }

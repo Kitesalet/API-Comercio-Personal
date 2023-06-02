@@ -1,16 +1,12 @@
 ﻿using Common.DTOs.EmployeeDto;
+using Common.Model;
 
-namespace Common.DTOs;
+namespace Common.DTOs.TeamDto;
 
 public class TeamGet
 {
-
-
-public int Id { get; set; }
-
-public string Name { get; set; }
-
-public List<EmployeeList> Employees { get; set; }    
-
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public List<EmployeeGet> Employees { get; set; }
 
 }

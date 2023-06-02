@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Common.DTOs.TeamDto;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,7 +18,7 @@ public class Employee : BaseEntity
 
     public Job Job { get; set; }    
 
-    public List<Team> Teams { get; set; }
+    public List<TeamGet> Teams { get; set; }
 
 
 }

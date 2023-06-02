@@ -17,7 +17,7 @@ public class MapperProfile : Profile
 {
 
 
-    public MapperProfile() 
+    public MapperProfile()
     {
 
         //Address
@@ -38,16 +38,19 @@ public class MapperProfile : Profile
 
         //Employee
 
-        CreateMap<EmployeeCreate, Employee>().ForMember(e => e.Id, e => e.Ignore());
-        CreateMap<EmployeeUpdate, Employee>();
+        CreateMap<EmployeeCreate, Employee>().ForMember(e => e.Id, e => e.Ignore()).ForMember(e => e.Teams, e=>e.Ignore());
+        CreateMap<EmployeeUpdate, Employee>().ForMember(e => e.Address, f => f.Ignore()).ForMember(e => e.Job, f => f.Ignore()).ForMember(e => e.Teams, f => f.Ignore());
         CreateMap<Employee, EmployeeGet>();
-        CreateMap<Employee, EmployeeList>();
+        CreateMap<Employee, EmployeeGetSimple>();
+
+
 
         //Team
 
-        CreateMap<TeamCreate, Team>().ForMember(e => e.Employees, e => e.Ignore());
-        CreateMap<TeamUpdate, Team>().ForMember(e => e.Employees, e => e.Ignore());
+        CreateMap<TeamCreate, Team>().ForMember(e => e.Id, e => e.Ignore()).ForMember(e => e.Employees, e => e.Ignore());
+        CreateMap<TeamUpdate, Team>().ForMember(e=> e.Employees, e => e.Ignore());
         CreateMap<Team, TeamGet>();
+
 
     }
 

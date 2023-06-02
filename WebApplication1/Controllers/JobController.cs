@@ -40,9 +40,9 @@ namespace WebApplication1.Controllers
         public async Task<IActionResult> GetAddressId(int id)
         {
 
-            _addressService.JobGetIdAsync(id);
+            var z = await _addressService.JobGetIdAsync(id);
 
-            return Ok();
+            return Ok(z);
         }
 
         //GetAll
@@ -61,7 +61,7 @@ namespace WebApplication1.Controllers
         [Route("Update")]
         public async Task<IActionResult> UpdateAddress(JobUpdate addressUpdate)
         {
-            _addressService.JobUpdate(addressUpdate);
+            await _addressService.JobUpdate(addressUpdate);
 
             return Ok();
         }
@@ -73,7 +73,7 @@ namespace WebApplication1.Controllers
         [Route("Delete")]
         public async Task<IActionResult> DeleteAddress(JobDelete addressDelete)
         {
-            _addressService.JobDelete(addressDelete);
+            await _addressService.JobDelete(addressDelete);
             return Ok();
         }
 

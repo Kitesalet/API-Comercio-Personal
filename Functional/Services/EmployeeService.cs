@@ -9,99 +9,112 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Functional.Services;
-
-public class EmployeeService : IEmployeeService
+namespace Functional.Services
 {
-    private readonly IMapper _mapper;
-    private readonly IGenericRepository<Employee> _employeeRepo;
-    private readonly IGenericRepository<Address> _addressRepo;
-    private readonly IGenericRepository<Job> _jobRepo;
-
-    public EmployeeService(IMapper mapper, IGenericRepository<Employee> employeeRepo, IGenericRepository<Address> addressRepo, IGenericRepository<Job> jobRepo)
+    internal class EmployeeService : IEmployeeService
     {
+        private readonly IGenericRepository<Employee> _repo;
+        private IMapper _mapper;
+        private readonly IGenericRepository<Job> _jobRepo;
+        private readonly IGenericRepository<Address> _addressRepo;
+        private readonly IGenericRepository<Team> _teamRepo;
 
-        _mapper = mapper;
-        _employeeRepo = employeeRepo;
-        _addressRepo = addressRepo;
-        _jobRepo = jobRepo;
-
-    }
-
-    public async Task<int> CreateEmployeeAsync(EmployeeCreate employeeCreate)
-    {
-
-        var job = await _jobRepo.GetByIdAsync(employeeCreate.JobId);
-        var address = await _addressRepo.GetByIdAsync(employeeCreate.AddressId);
-
-        var employee = _mapper.Map<Employee>(employeeCreate);
-
-        employee.Address = address;
-        employee.Job = job;
-
-        await _employeeRepo.AddAsync(employee);
-
-        await _employeeRepo.SaveChangesAsync();
-
-        return employee.Id;
-
-    }
-
-    public async Task DeleteEmployee(EmployeeDelete employeeDelete)
-    {
-        var entity = await _employeeRepo.GetByIdAsync(employeeDelete.Id);
-
-        _employeeRepo.DeleteAsync(entity);
-
-        await _employeeRepo.SaveChangesAsync();
-
-    }
-
-    public async Task<EmployeeGet> GetEmployeeByIdAsync(int id)
-    {
-        
-        var entity = await _employeeRepo.GetByIdAsync(id, e => e.Address, entity => entity.Job, entity => entity.Teams);
-
-        var entityDto = _mapper.Map<EmployeeGet>(entity);
-
-        return entityDto;
-
-    }
-
-    public async Task<List<EmployeeList>> GetEmployeesFiltered(EmployeeFiltered employeeFiltered)
-    {
-
-
-
-        Expression<Func<Employee, bool>>[] filtros = new Expression<Func<Employee, bool>>[]
+        public EmployeeService(IMapper mapper, IGenericRepository<Team> teamRepo, IGenericRepository<Employee> employeeRepo, IGenericRepository<Address> addressRepo, IGenericRepository<Job> jobRepo)
         {
-            employee => employeeFiltered.FirstName == null ? true : employee.FirstName.StartsWith(employeeFiltered.FirstName),
-            employee => employeeFiltered.LastName == null ? true : employee.LastName.StartsWith(employeeFiltered.LastName),
-            employee => employeeFiltered.Job == null ? true : employee.Job.Name.StartsWith(employeeFiltered.Job),
-            employee => employeeFiltered.Address == null ? true: employee.Address.Street.StartsWith(employeeFiltered.Address)
+            
+            _repo = employeeRepo;
 
-        };
+            _mapper = mapper;
 
-        var list = await _employeeRepo.GetFilteredAsync(filtros, employeeFiltered.skip, employeeFiltered.take, e=> e.Teams, e => e.Address, e => e.Job);
+            _jobRepo = jobRepo;
 
-        return _mapper.Map<List<EmployeeList>>(list);
+            _addressRepo = addressRepo;
 
-    }
+            _teamRepo = teamRepo;
 
-    public async Task UpdateEmployee(EmployeeUpdate employeeUpdate)
-    {
+        }
 
-        var job = await _jobRepo.GetByIdAsync(employeeUpdate.JobId);
-        var address = await _addressRepo.GetByIdAsync(employeeUpdate.AddressId);
+        public async Task<int> CreateEmployeeAsync(EmployeeCreate employeeCreate)
+        {          
 
-        var entity = _mapper.Map<Employee>(employeeUpdate);
+            var entity = _mapper.Map<Employee>(employeeCreate);
 
-        entity.Address = address;
-        entity.Job = job;
+            Job job = await _jobRepo.GetByIdAsync(employeeCreate.JobId);
 
-         _employeeRepo.UpdateAsync(entity);
+            Address address = await _addressRepo.GetByIdAsync(employeeCreate.AddressId);
 
-        _employeeRepo.SaveChangesAsync();
 
+            await _repo.AddAsync(entity);
+
+            await _repo.SaveChangesAsync();
+
+            return entity.Id;
+
+
+        }
+
+        public async Task DeleteEmployee(EmployeeDelete employeeDelete)
+        {
+            var oldEntity = await _repo.GetByIdAsync(employeeDelete.Id);
+
+            var entity = _mapper.Map<Employee>(oldEntity);
+
+            _repo.DeleteAsync(entity);
+
+            await _repo.SaveChangesAsync();
+
+        }
+
+        public async Task<EmployeeGet> GetEmployeeByIdAsync(int employeeId)
+        {
+
+            var employee = await _repo.GetByIdAsync(employeeId, e => e.Address, e => e.Address);
+
+            
+            return _mapper.Map<EmployeeGet>(employee);
+
+
+
+        }
+
+        public async Task<List<EmployeeGetSimple>> GetEmployeeFiltered(EmployeeFilters employeeFilters)
+        {
+
+            Expression<Func<Employee, bool>>[] filters = new Expression<Func<Employee, bool>>[]
+            {
+                employee => employeeFilters.Job == null ? true : employee.Job.Name.StartsWith(employeeFilters.Job),
+                employee => employeeFilters.Address == null ? true : employee.Address.Street.Contains(employeeFilters.Address),
+                employee => employeeFilters.FirstName == null ? true : employee.FirstName.StartsWith(employeeFilters.FirstName),
+                e => employeeFilters.LastName == null ? true : e.LastName.StartsWith(employeeFilters.LastName),
+            };
+
+            var entities = await _repo.GetFilteredAsync(filters,null,null);
+
+            return _mapper.Map<List<EmployeeGetSimple>>(entities);
+
+
+        }
+
+        public async Task UpdateEmployeeAsync(EmployeeUpdate employeeUpdate)
+        {
+
+            var entity = await _repo.GetByIdAsync(employeeUpdate.Id, e => e.Teams, e => e.Address, e => e.Job);
+
+            var job = await _jobRepo.GetByIdAsync(employeeUpdate.JobId);
+
+            var address = await _addressRepo.GetByIdAsync(employeeUpdate.AddressId);
+
+            entity.Job = job;
+
+            entity.Address = address;
+
+            _repo.UpdateAsync(entity);
+
+            await _repo.SaveChangesAsync();
+
+
+
+
+        }
     }
 }
